@@ -1,8 +1,15 @@
 
 # nosebook
+
 a [nose](http://nose.readthedocs.org/) plugin for finding and running IPython notebooks as nose tests.
 
 You can use it to decrease the burden of documentation and testing by making a single set of notebooks into both rich documentation and a part of your test suite, with certain limitations.
+
+
+[![Build Status][svg]][status]
+
+[svg]: https://travis-ci.org/bollwyvl/nosebook.svg?branch=master
+[status]: https://travis-ci.org/bollwyvl/nosebook
 
 ## How does it work?
 Each notebook is started with a fresh kernel, based on the kernel specified in the notebook. If the kernel is not installed, no tests will be run and the error will be logged.
@@ -57,3 +64,13 @@ Nothing too fancy here.
 
 
     !ipython nbconvert README.ipynb --to=markdown
+
+    [NbConvertApp] Using existing profile dir: '/home/weg/.ipython/profile_default'
+    [NbConvertApp] Converting notebook README.ipynb to markdown
+    [NbConvertApp] Support files will be in README_files/
+    [NbConvertApp] Loaded template markdown.tpl
+    [NbConvertApp] Writing 1909 bytes to README.md
+
+
+
+    
