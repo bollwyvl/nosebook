@@ -32,7 +32,7 @@ setup(
     keywords="IPython nose",
     url="http://github.com/bollwyvl/nosebook",
     py_modules=["nosebook"],
-    long_description=read("README.rst"),
+    long_description=read("README.md"),
     test_suite="nose.collector",
     classifiers=[
         "Topic :: Utilities",
