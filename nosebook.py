@@ -58,12 +58,12 @@ class Nosebook(Plugin):
 
     def newKernel(self, nb):
         # use a new kernel per file
-        if IP_VERSION.split(".")[0] < 3:
+        if int(IP_VERSION.split(".")[0]) < 3:
+            manager, kernel = utils.start_new_kernel()
+        else:
             manager, kernel = utils.start_new_kernel(
                 kernel_name=nb.metadata.kernelspec.name
             )
-        else:
-            manager, kernel = utils.start_new_kernel()
 
         return kernel
 
