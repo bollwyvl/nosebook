@@ -3,7 +3,7 @@ nosebook
 ========
 
 a `nose <http://nose.readthedocs.org/>`__ plugin for finding and running
-IPython notebooks as nose tests.
+IPython 3 notebooks as nose tests.
 
 You can use it to decrease the burden of documentation and testing by
 making a single set of notebooks into both rich documentation and a part
@@ -26,7 +26,10 @@ appear in the notebook: other cells e.g. ``markdown``, ``raw``, are just
 ignored.
 
 The output has to **match exactly**, with the following parts of the
-output stripped: - execution numbers, i.e. ``[1]:`` - tracebacks
+output stripped:
+
+-  execution numbers, i.e. ``[1]:``
+-  tracebacks
 
 This can be a problem, such as with class ``_repr_`` methods that
 include the memory location of the instance, so care should be taken
