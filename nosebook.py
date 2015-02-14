@@ -6,7 +6,7 @@ from unittest import TestCase
 
 from nose.plugins import Plugin
 
-from IPython.nbformat import read
+from IPython.nbformat.reader import read
 from IPython.kernel.tests import utils
 
 
