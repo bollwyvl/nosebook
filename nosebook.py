@@ -6,7 +6,7 @@ from unittest import TestCase
 
 from nose.plugins import Plugin
 
-from IPython.nbformat.reader import read
+from IPython.nbformat import read
 from IPython.kernel.tests import utils
 
 
@@ -43,7 +43,7 @@ class Nosebook(Plugin):
         return self.testMatch(filename) is not None
 
     def loadTestsFromFile(self, filename):
-        nb = read(filename)
+        nb = read(filename, NBFORMAT_VERSION)
 
         kernel = self.newKernel(nb)
 
