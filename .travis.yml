@@ -2,7 +2,10 @@ language: python
 sudo: false
 python:
   - "3.4"
+cache:
+  directories:
+    - $HOME/.pip-cache/
 install:
-  - "pip install -r requirements-dev.txt"
+  - "pip install -r requirements-dev.txt --download-cache $HOME/.pip-cache"
   - "python setup.py develop"
 script: flake8 *.py tests/*.py && python setup.py test
