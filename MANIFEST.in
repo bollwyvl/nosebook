@@ -1,1 +1,3 @@
-recursive-include *.ipynb LICENSE
+include LICENSE
+include *.ipynb
+recursive-include tests/ *.ipynb

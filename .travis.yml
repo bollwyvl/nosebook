@@ -3,6 +3,8 @@ sudo: false
 python:
   - "3.4"
 # command to install dependencies
-install: "pip install -r requirements-dev.txt"
+install:
+  - "pip install -r requirements-dev.txt"
+  - "python setup.py develop"
 # command to run tests
 script: python setup.py test
