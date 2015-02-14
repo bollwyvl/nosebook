@@ -8,4 +8,4 @@ cache:
 install:
   - "pip install -r requirements-dev.txt"
   - "python setup.py develop"
-script: flake8 *.py tests/*.py && python setup.py test
+script: python -m flake8 *.py tests/*.py && python setup.py test
