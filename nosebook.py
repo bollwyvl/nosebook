@@ -16,9 +16,16 @@ log = logging.getLogger("nose.plugins.nosebook")
 
 
 class Nosebook(Plugin):
+    """
+    A nose plugin for discovering and executing IPython notebook cells
+    as tests
+    """
     name = "nosebook"
 
     def options(self, parser, env=os.environ):
+        """
+        advertise options
+        """
         super(Nosebook, self).options(parser, env=env)
 
         self.testMatchPat = env.get('NOSEBOOK_TESTMATCH',
@@ -36,13 +43,22 @@ class Nosebook(Plugin):
         )
 
     def configure(self, options, conf):
+        """
+        apply configured options
+        """
         super(Nosebook, self).configure(options, conf)
         self.testMatch = re.compile(options.nosebookTestMatch).match
 
     def wantFile(self, filename):
+        """
+        filter files to those that match nosebook-match
+        """
         return self.testMatch(filename) is not None
 
     def loadTestsFromFile(self, filename):
+        """
+        find all tests in a notebook.
+        """
         nb = read(filename, NBFORMAT_VERSION)
 
         kernel = self.newKernel(nb)
@@ -52,7 +68,9 @@ class Nosebook(Plugin):
                 yield NoseCellTestCase(cell, kernel)
 
     def newKernel(self, nb):
-        # use a new kernel per file
+        """
+        generate a new kernel
+        """
         manager, kernel = utils.start_new_kernel(
             kernel_name=nb.metadata.kernelspec.name
         )
@@ -67,6 +85,9 @@ class NoseCellTestCase(TestCase):
     STRIP_KEYS = ["execution_count", "traceback"]
 
     def __init__(self, cell, kernel, *args, **kwargs):
+        """
+        initialize this cell as a test
+        """
         super(NoseCellTestCase, self).__init__(*args, **kwargs)
         self.cell = self.sanitizeCell(cell)
 
@@ -74,6 +95,9 @@ class NoseCellTestCase(TestCase):
         self.iopub = self.kernel.iopub_channel
 
     def runTest(self):
+        """
+        lumps all the tests together... might be a better way to do this
+        """
         self.kernel.execute(self.cell.source)
 
         outputs = []
@@ -91,18 +115,25 @@ class NoseCellTestCase(TestCase):
             self.assertEqual(outputs, self.cell.outputs)
 
     def stripKeys(self, d):
+        """
+        remove keys from STRIP_KEYS to ensure comparability
+        """
         for key in self.STRIP_KEYS:
             d.pop(key, None)
         return d
 
     def sanitizeCell(self, cell):
-        # remove non-reproducible things
+        """
+        remove non-reproducible things
+        """
         for output in cell.outputs:
             self.stripKeys(output)
         return cell
 
     def transformMessage(self, msg):
-        # transform a message into something like the notebook
+        """
+        transform a message into something like the notebook
+        """
         output = {
             u"output_type": msg["msg_type"]
         }
@@ -111,6 +142,9 @@ class NoseCellTestCase(TestCase):
         return self.stripKeys(output)
 
     def shouldContinue(self, msg):
+        """
+        determine whether the current message is the last for this cell
+        """
         if msg is None:
             return True
 
