@@ -2,14 +2,18 @@
 nosebook
 ========
 
+|Build Status|
+
 a `nose <http://nose.readthedocs.org/>`__ plugin for finding and running
 IPython 3 notebooks as nose tests.
 
-You can use it to decrease the burden of documentation and testing by
-making a single set of notebooks into both rich documentation and a part
-of your test suite, with certain limitations.
+What it can't do in terms of ``setup`` and ``tearDown``, ``nosebook``
+makes up for in simplicity: there is no ``%%nose`` magic, no metadata
+required: the notebook on disk is the "gold master".
 
-|Build Status|
+This makes it ideal for decreasing the burden of keeping documentation
+up to date with tests by making a single set of notebooks into both
+rich, multi-format documentation and a simple part of your test suite.
 
 .. |Build Status| image:: https://travis-ci.org/bollwyvl/nosebook.svg?branch=master
    :target: https://travis-ci.org/bollwyvl/nosebook
@@ -17,23 +21,32 @@ of your test suite, with certain limitations.
 How does it work?
 -----------------
 
-Each notebook is started with a fresh kernel, based on the kernel
-specified in the notebook. If the kernel is not installed, no tests will
-be run and the error will be logged.
+Each notebook found according to
+```nosebook-match`` <#nosebook-match>`__ is started with a fresh kernel,
+based on the kernel specified in the notebook. If the kernel is not
+installed, no tests will be run and the error will be logged.
 
-Each ``code`` will be executed against the kernel in the order they
-appear in the notebook: other cells e.g. ``markdown``, ``raw``, are just
-ignored.
+Each ``code`` cell will be executed against the kernel in the order in
+which it appears in the notebook: other cells e.g. ``markdown``,
+``raw``, are ignored.
 
-The output has to **match exactly**, with the following parts of the
-output stripped:
+The number and content of outputs has to **match exactly**, with the
+following parts of each output stripped:
 
--  execution numbers, i.e. ``[1]:``
+-  execution/prompt numbers, i.e. ``[1]:``
 -  tracebacks
 
-This can be a problem, such as with class ``_repr_`` methods that
-include the memory location of the instance, so care should be taken
-with non-deterministic output.
+Non-deterministic output, such as with ``_repr_`` methods that include
+the memory location of the instance, will obviously not match every
+time. You can use ```nosebook-scrub`` <#nosebook-scrub>`__ to rewrite or
+remove offending content.
+
+Related work
+------------
+
+-  ```ipython_nose`` <http://github.com/taavi/ipython_nose>`__ allows
+   you to use a notebook as a nose runner, with traditional
+   ``test_whatever`` methods.
 
 Configuring ``nosetests`` to use ``nosebook``
 ---------------------------------------------
@@ -65,7 +78,39 @@ notebook.
 
     # Run against all notebooks... probably not a good idea
     !nosetests --with-nosebook --nosebook-match .*.ipynb
-``python setup.py test`` integration
-------------------------------------
+``nosebook-scrub``
+^^^^^^^^^^^^^^^^^^
 
-Strangely complex, see the example in ```setup.py`` <./setup.py>`__.
+A regular expression that will be replaced throughout the expected
+outputs and generated outputs.
+
+*Default: None*
+
+.. code:: python
+
+    # you can't fail if you don't try
+    !nosetests --with-nosebook --nosebook-scrub .+
+For multiple scrub values, you can pass a JSON-formatted list of regular
+expressions or object of pattern-replacement pairs that will be
+replaced. When passed in via the command line, you'll have to escape
+special characters: using a ``.noserc`` config file makes this easier.
+
+.. code:: python
+
+    # there are only 10 kinds of tests...
+    !nosetests --with-nosebook --nosebook-scrub='["0", "1"]'
+.. code:: python
+
+    # 0 is equally good
+    !nosetests --with-nosebook --nosebook-scrub='{"\\d+": "0"}'
+Contributing
+------------
+
+`Issues <https://github.com/bollwyvl/nosebook/issues>`__ and `pull
+requests <https://github.com/bollwyvl/nosebook/pulls>`__ welcome!
+
+License
+-------
+
+``nosebook`` is released as free software under the `BSD 3-Clause
+license <./LICENSE>`__.

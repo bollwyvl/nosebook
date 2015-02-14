@@ -2,9 +2,7 @@ language: python
 sudo: false
 python:
   - "3.4"
-# command to install dependencies
 install:
   - "pip install -r requirements-dev.txt"
   - "python setup.py develop"
-# command to run tests
-script: python setup.py test
+script: flake8 *.py tests/*.py && python setup.py test

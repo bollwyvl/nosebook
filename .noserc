@@ -1,2 +1,2 @@
 [nosetests]
-with-nosebook=1
+verbosity=3

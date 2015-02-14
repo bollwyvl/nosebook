@@ -1,6 +1,8 @@
 import logging
 import os
 import re
+import json
+from copy import copy
 
 from unittest import TestCase
 
@@ -26,7 +28,6 @@ class Nosebook(Plugin):
         """
         advertise options
         """
-        super(Nosebook, self).options(parser, env=env)
 
         self.testMatchPat = env.get('NOSEBOOK_TESTMATCH',
                                     r'.*[Tt]est.*\.ipynb$')
@@ -41,6 +42,16 @@ class Nosebook(Plugin):
                  "Default: %s [NOSEBOOK_TESTMATCH]" % self.testMatchPat,
             default=self.testMatchPat
         )
+        parser.add_option(
+            "--nosebook-scrub",
+            action="store",
+            default=env.get('NOSEBOOK_SCRUB'),
+            dest="nosebookScrub",
+            help="a quoted regex, or JSON obj/list of regexen to "
+                 "scrub from cell outputs "
+                 "[NOSEBOOK_SCRUB]")
+
+        super(Nosebook, self).options(parser, env=env)
 
     def configure(self, options, conf):
         """
@@ -48,6 +59,25 @@ class Nosebook(Plugin):
         """
         super(Nosebook, self).configure(options, conf)
         self.testMatch = re.compile(options.nosebookTestMatch).match
+        scrubs = []
+        if options.nosebookScrub:
+            try:
+                scrubs = json.loads(options.nosebookScrub)
+            except Exception:
+                scrubs = [options.nosebookScrub]
+
+        if isinstance(scrubs, str):
+            scrubs = {scrubs: "<...>"}
+        elif not isinstance(scrubs, dict):
+            scrubs = dict([
+                (scrub, "<...%s>" % i)
+                for i, scrub in enumerate(scrubs)
+            ])
+
+        self.scrubMatch = {
+            re.compile(scrub): sub
+            for scrub, sub in scrubs.items()
+        }
 
     def wantFile(self, filename):
         """
@@ -63,9 +93,15 @@ class Nosebook(Plugin):
 
         kernel = self.newKernel(nb)
 
-        for cell in nb.cells:
+        for cell_idx, cell in enumerate(nb.cells):
             if cell.cell_type == "code":
-                yield NoseCellTestCase(cell, kernel)
+                yield NoseCellTestCase(
+                    cell,
+                    cell_idx,
+                    kernel,
+                    filename=filename,
+                    scrubs=self.scrubMatch
+                )
 
     def newKernel(self, nb):
         """
@@ -84,20 +120,27 @@ class NoseCellTestCase(TestCase):
     IGNORE_TYPES = ["execute_request", "execute_input", "status"]
     STRIP_KEYS = ["execution_count", "traceback"]
 
-    def __init__(self, cell, kernel, *args, **kwargs):
+    def __init__(self, cell, cell_idx, kernel, *args, **kwargs):
         """
         initialize this cell as a test
         """
-        super(NoseCellTestCase, self).__init__(*args, **kwargs)
+
         self.cell = self.sanitizeCell(cell)
+        self.cell_idx = cell_idx
+        self.scrubs = kwargs.pop("scrubs", [])
+        self.filename = kwargs.pop("filename", "")
 
         self.kernel = kernel
         self.iopub = self.kernel.iopub_channel
 
+        self.runTest.__func__.__doc__ = self.id()
+
+        super(NoseCellTestCase, self).__init__(*args, **kwargs)
+
+    def id(self):
+        return "%s#%s" % (self.filename, self.cell_idx)
+
     def runTest(self):
-        """
-        lumps all the tests together... might be a better way to do this
-        """
         self.kernel.execute(self.cell.source)
 
         outputs = []
@@ -109,10 +152,30 @@ class NoseCellTestCase(TestCase):
             if msg["msg_type"] not in self.IGNORE_TYPES:
                 outputs.append(self.transformMessage(msg))
 
-        if not self.cell.outputs:
-            self.assertEqual(outputs, [])
-        else:
-            self.assertEqual(outputs, self.cell.outputs)
+        self.assertEqual(
+            list(self.scrubOutputs(outputs)),
+            list(self.scrubOutputs(self.cell.outputs)),
+            [outputs, self.cell.outputs]
+        )
+
+    def scrubOutputs(self, outputs):
+        """
+        remove all scrubs from output data and text
+        """
+        for output in outputs:
+            out = copy(output)
+
+            for scrub, sub in self.scrubs.items():
+                def _scrubLines(obj, key):
+                    obj[key] = re.sub(scrub, sub, obj[key])
+
+                if "text" in out:
+                    _scrubLines(out, "text")
+
+                if "data" in out:
+                    for mime, data in out["data"].items():
+                        _scrubLines(out["data"], mime)
+            yield out
 
     def stripKeys(self, d):
         """
