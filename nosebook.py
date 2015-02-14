@@ -6,9 +6,11 @@ from unittest import TestCase
 
 from nose.plugins import Plugin
 
-from IPython import __version__ as IP_VERSION
 from IPython.nbformat.reader import read
 from IPython.kernel.tests import utils
+
+
+NBFORMAT_VERSION = 4
 
 log = logging.getLogger("nose.plugins.nosebook")
 
@@ -41,30 +43,19 @@ class Nosebook(Plugin):
         return self.testMatch(filename) is not None
 
     def loadTestsFromFile(self, filename):
-        with open(filename, "r") as f:
-            nb = read(f)
+        nb = read(filename)
 
-        kernel = None
+        kernel = self.newKernel(nb)
 
-        try:
-            kernel = self.newKernel(nb)
-        except Exception as err:
-            log.error("Couldn't start kernel: %s" % err)
-
-        if kernel:
-            for cell in nb.cells:
-                if cell.cell_type == "code":
-                    yield NoseCellTestCase(cell, kernel)
+        for cell in nb.cells:
+            if cell.cell_type == "code":
+                yield NoseCellTestCase(cell, kernel)
 
     def newKernel(self, nb):
         # use a new kernel per file
-        if int(IP_VERSION.split(".")[0]) < 3:
-            manager, kernel = utils.start_new_kernel()
-        else:
-            manager, kernel = utils.start_new_kernel(
-                kernel_name=nb.metadata.kernelspec.name
-            )
-
+        manager, kernel = utils.start_new_kernel(
+            kernel_name=nb.metadata.kernelspec.name
+        )
         return kernel
 
 
