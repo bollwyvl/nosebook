@@ -48,7 +48,9 @@ setup(
     ],
     setup_requires=[
         "nose",
-        "IPython"
+        "IPython",
+        "jsonschema",
+        "pyzmq"
     ],
     entry_points={"nose.plugins.0.10": [
         "nosebook = nosebook:Nosebook",
