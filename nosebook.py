@@ -33,6 +33,9 @@ class Nosebook(Plugin):
         self.testMatchPat = env.get('NOSEBOOK_TESTMATCH',
                                     r'.*[Tt]est.*\.ipynb$')
 
+        self.testMatchCellPat = env.get('NOSEBOOK_CELLMATCH',
+                                        r'.*')
+
         parser.add_option(
             "--nosebook-match",
             action="store",
@@ -43,6 +46,18 @@ class Nosebook(Plugin):
                  "Default: %s [NOSEBOOK_TESTMATCH]" % self.testMatchPat,
             default=self.testMatchPat
         )
+
+        parser.add_option(
+            "--nosebook-match-cell",
+            action="store",
+            dest="nosebookTestMatchCell",
+            metavar="REGEX",
+            help="Notebook cells that match this regular expression are "
+                 "considered tests.  "
+                 "Default: %s [NOSEBOOK_CELLMATCH]" % self.testMatchCellPat,
+            default=self.testMatchCellPat
+        )
+
         parser.add_option(
             "--nosebook-scrub",
             action="store",
@@ -59,7 +74,10 @@ class Nosebook(Plugin):
         apply configured options
         """
         super(Nosebook, self).configure(options, conf)
+
         self.testMatch = re.compile(options.nosebookTestMatch).match
+        self.testMatchCell = re.compile(options.nosebookTestMatchCell).match
+
         scrubs = []
         if options.nosebookScrub:
             try:
@@ -80,11 +98,35 @@ class Nosebook(Plugin):
             for scrub, sub in scrubs.items()
         }
 
+    def wantModule(self, *args, **kwargs):
+        log.info("considering %s %s", args, kwargs)
+        return False
+
     def wantFile(self, filename):
         """
         filter files to those that match nosebook-match
         """
-        return self.testMatch(filename) is not None
+
+        log.info("considering %s", filename)
+
+        if self.testMatch(filename) is None:
+            return False
+
+        try:
+            nb = read(filename, NBFORMAT_VERSION)
+        except Exception as err:
+            log.info("could not be parse as a notebook %s\n%s",
+                     filename,
+                     err)
+            return False
+
+        for cell in nb.cells:
+            if cell.cell_type == "code":
+                return True
+
+        log.info("no `code` cells in %s", filename)
+
+        return False
 
     def loadTestsFromFile(self, filename):
         """
@@ -95,7 +137,10 @@ class Nosebook(Plugin):
         kernel = self.newKernel(nb)
 
         for cell_idx, cell in enumerate(nb.cells):
-            if cell.cell_type == "code":
+            if (
+                cell.cell_type == "code" and
+                self.testMatchCell(cell.source) is not None
+            ):
                 yield NoseCellTestCase(
                     cell,
                     cell_idx,

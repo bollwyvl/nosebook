@@ -17,7 +17,7 @@ This makes it ideal for decreasing the burden of keeping documentation up to dat
 ## How does it work?
 Each notebook found according to [`nosebook-match`](#nosebook-match) is started with a fresh kernel, based on the kernel specified in the notebook. If the kernel is not installed, no tests will be run and the error will be logged.
 
-Each `code` cell will be executed against the kernel in the order in which it appears in the notebook: other cells e.g. `markdown`, `raw`, are ignored.
+Each `code` cell that matches [`nosebook-match-cell`](#nosebook-match-cell) will be executed against the kernel in the order in which it appears in the notebook: other cells e.g. `markdown`, `raw`, are ignored.
 
 The number and content of outputs has to __match exactly__, with the following parts of each output stripped:
 
@@ -27,7 +27,7 @@ The number and content of outputs has to __match exactly__, with the following p
 Non-deterministic output, such as with `_repr_` methods that include the memory location of the instance, will obviously not match every time. You can use [`nosebook-scrub`](#nosebook-scrub) to rewrite or remove offending content.
 
 ## Related work
-- [`ipython_nose`](http://github.com/taavi/ipython_nose) allows you to use a notebook as a nose runner, with traditional `test_whatever` methods.
+- [`ipython_nose`](http://github.com/taavi/ipython_nose) allows you to use a notebook as a nose runner, with traditional `test_whatever` methods. You can sort of emulate this behavior with [`nosebook-match-cell`](#nosebook-match-cel)... as long as you check in passing tests!
 
 ## Configuring `nosetests` to use `nosebook`
 These options can be specified in your [nose config file](./.noserc), or as long-form command line arguments, i.e. `--with-nosebook`.
@@ -47,8 +47,17 @@ A regular expression that tells nosebook what should be a testable notebook.
 _Default: `.*[Tt]est.*.ipynb$`_
 
 
-    # Run against all notebooks... probably not a good idea
+    # Run against all notebooks... probably not a good idea, but maybe a great idea
     !nosetests --with-nosebook --nosebook-match .*.ipynb
+
+#### `nosebook-match-cell`
+A regular expression that will be replaced throughout the expected outputs and generated outputs.
+
+_Default: None_
+
+
+    # will run cells where tests are defined... but you should probably run them, too
+    !nosetests --with-nosebook --nosebook-match .*Simple.* --nosebook-match-cell '(def|class).*[Tt]est'
 
 #### `nosebook-scrub`
 A regular expression that will be replaced throughout the expected outputs and generated outputs.
