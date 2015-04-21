@@ -12,6 +12,10 @@ def match(pattern):
     return "--nosebook-match=.*%s.*" % pattern
 
 
+def match_cell(pattern):
+    return "--nosebook-match-cell=%s" % pattern
+
+
 def scrub(patterns):
     return "--nosebook-scrub=%s" % json.dumps(patterns)
 
@@ -68,6 +72,13 @@ class TestScrubStr(TestNosebook):
         match("Scrubbing"),
         scrub("((a|some other) random number <0x0\.\d*>)|"
               "<(.*) at 0x[0-9a-f]+>")
+    ] + OTHER_ARGS
+
+
+class TestMatchCell(TestNosebook):
+    args = [
+        match("Test"),
+        match_cell("^\s*(class|def) .*[tT]est.*")
     ] + OTHER_ARGS
 
 
