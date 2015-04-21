@@ -24,7 +24,7 @@ def read(fname):
 
 setup(
     name="nosebook",
-    version="0.2.0",
+    version="0.3.0",
     author="Nicholas Bollweg",
     author_email="nick.bollweg@gmail.com",
     description="a nose plugin for IPython notebooks",
