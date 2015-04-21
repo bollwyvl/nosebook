@@ -1,7 +1,6 @@
 
 # nosebook
-[![Build Status][svg]][status]
-![pypi](https://pypip.in/version/nosebook/badge.svg?style=flat)
+[![Build Status][build_svg]][build_status] [![PyPI][pypi_svg]][pypi] [![BSD][license_svg]][license]
 
 
 a [nose](http://nose.readthedocs.org/) plugin for finding and running IPython 3 notebooks as nose tests.
@@ -11,8 +10,12 @@ What it can't do in terms of `setup` and `tearDown`, `nosebook` makes up for in 
 This makes it ideal for decreasing the burden of keeping documentation up to date with tests by making a single set of notebooks into both rich, multi-format documentation and a simple part of your test suite.
 
 
-[svg]: https://travis-ci.org/bollwyvl/nosebook.svg?branch=master
-[status]: https://travis-ci.org/bollwyvl/nosebook
+[build_svg]: https://travis-ci.org/bollwyvl/nosebook.svg?branch=master
+[build_status]: https://travis-ci.org/bollwyvl/nosebook
+[pypi_svg]: https://pypip.in/version/nosebook/badge.svg?style=flat
+[pypi]: https://pypi.python.org/pypi/nosebook
+[license_svg]: https://pypip.in/license/nose-watcher/badge.svg
+[license]: ./LICENSE
 
 ## How does it work?
 Each notebook found according to [`nosebook-match`](#nosebook-match) is started with a fresh kernel, based on the kernel specified in the notebook. If the kernel is not installed, no tests will be run and the error will be logged.

@@ -11,7 +11,7 @@ from nose.plugins import Plugin
 from IPython.nbformat import read
 from IPython.kernel.tests import utils
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 NBFORMAT_VERSION = 4
 
