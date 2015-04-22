@@ -1,5 +1,6 @@
-import unittest
 import json
+import os
+import unittest
 
 from nose.plugins import PluginTester
 
@@ -7,9 +8,14 @@ from nosebook import Nosebook
 
 OTHER_ARGS = ["--verbosity=3"]
 
+NBFORMAT = ""
+
+if os.environ.get("IP_VERSION", None) == 2:
+    NBFORMAT = "nbformat3.*"
+
 
 def match(pattern):
-    return "--nosebook-match=.*%s.*" % pattern
+    return "--nosebook-match=.*%s%s.*" % (NBFORMAT, pattern)
 
 
 def match_cell(pattern):
