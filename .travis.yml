@@ -15,8 +15,3 @@ install:
 script:
   - python -m flake8 *.py tests/*.py
   - python setup.py test
-cache:
-  directories:
-    - /home/travis/virtualenv/python2.7.9/lib/python2.7/site-packages
-    - /home/travis/virtualenv/python3.3.5/lib/python3.3/site-packages
-    - /home/travis/virtualenv/python3.4.2/lib/python3.4/site-packages
