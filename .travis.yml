@@ -9,6 +9,7 @@ env:
   - IP_VERSION=">=3.0,<4.0"
 install:
   - pip install IPython${IP_VERSION}
+  - ipython --version
   - pip install -r requirements-dev.txt
   - python setup.py develop
 script:

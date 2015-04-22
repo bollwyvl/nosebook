@@ -3,7 +3,11 @@ import os
 import re
 import json
 from copy import copy
-from Queue import Empty
+
+try:
+    from queue import Empty
+except ImportError:
+    from Queue import Empty
 
 from unittest import TestCase
 
