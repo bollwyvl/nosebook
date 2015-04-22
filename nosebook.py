@@ -3,22 +3,74 @@ import os
 import re
 import json
 from copy import copy
+from Queue import Empty
 
 from unittest import TestCase
 
 from nose.plugins import Plugin
 
-from IPython.nbformat import read
 from IPython.kernel.tests import utils
+
+try:
+    from IPython.nbformat import read
+    NBFORMAT_VERSION = 4
+    IPYTHON_VERSION = 3
+except ImportError:
+    from IPython.nbformat.reader import read
+    NBFORMAT_VERSION = 3
+    IPYTHON_VERSION = 2
 
 __version__ = "0.3.0"
 
-NBFORMAT_VERSION = 4
 
 log = logging.getLogger("nose.plugins.nosebook")
 
 
-class Nosebook(Plugin):
+class NosebookTwo(object):
+    """
+    Implement necessary functions against the IPython 2.x API
+    """
+    def _readnb(self, filename):
+        with open(filename) as f:
+            return read(f)
+
+    def _cells(self, nb):
+        for worksheet in nb.worksheets:
+            for cell in worksheet.cells:
+                yield cell
+
+
+class NosebookThree(object):
+    """
+    Implement necessary functions against the IPython 3.x API
+    """
+    def _readnb(self, filename):
+        return read(filename, NBFORMAT_VERSION)
+
+    def _cells(self, nb):
+        for cell in nb.cells:
+            yield cell
+
+
+class NoseCellTestCaseTwo(object):
+    def cellCode(self):
+        return self.cell.input
+
+
+class NoseCellTestCaseThree(object):
+    def cellCode(self):
+        return self.cell.source
+
+
+NosebookVersion = NosebookThree
+NoseCellTestCaseVersion = NoseCellTestCaseThree
+
+if IPYTHON_VERSION == 2:
+    NosebookVersion = NosebookTwo
+    NoseCellTestCaseVersion = NoseCellTestCaseTwo
+
+
+class Nosebook(NosebookVersion, Plugin):
     """
     A nose plugin for discovering and executing IPython notebook cells
     as tests
@@ -99,8 +151,25 @@ class Nosebook(Plugin):
         }
 
     def wantModule(self, *args, **kwargs):
-        log.info("considering %s %s", args, kwargs)
+        """
+        we don't handle actual code modules!
+        """
         return False
+
+    def readnb(self, filename):
+        try:
+            nb = self._readnb(filename)
+        except Exception as err:
+            log.info("could not be parse as a notebook %s\n%s",
+                     filename,
+                     err)
+            return False
+        return nb
+
+    def codeCells(self, nb):
+        for cell in self._cells(nb):
+            if cell.cell_type == "code":
+                yield cell
 
     def wantFile(self, filename):
         """
@@ -112,17 +181,10 @@ class Nosebook(Plugin):
         if self.testMatch(filename) is None:
             return False
 
-        try:
-            nb = read(filename, NBFORMAT_VERSION)
-        except Exception as err:
-            log.info("could not be parse as a notebook %s\n%s",
-                     filename,
-                     err)
-            return False
+        nb = self.readnb(filename)
 
-        for cell in nb.cells:
-            if cell.cell_type == "code":
-                return True
+        for cell in self.codeCells(nb):
+            return True
 
         log.info("no `code` cells in %s", filename)
 
@@ -132,15 +194,12 @@ class Nosebook(Plugin):
         """
         find all tests in a notebook.
         """
-        nb = read(filename, NBFORMAT_VERSION)
+        nb = self.readnb(filename)
 
         kernel = self.newKernel(nb)
 
-        for cell_idx, cell in enumerate(nb.cells):
-            if (
-                cell.cell_type == "code" and
-                self.testMatchCell(cell.source) is not None
-            ):
+        for cell_idx, cell in enumerate(self.codeCells(nb)):
+            if self.testMatchCell(cell.source) is not None:
                 yield NoseCellTestCase(
                     cell,
                     cell_idx,
@@ -159,12 +218,12 @@ class Nosebook(Plugin):
         return kernel
 
 
-class NoseCellTestCase(TestCase):
+class NoseCellTestCase(NoseCellTestCaseVersion, TestCase):
     """
     A test case for a single cell.
     """
-    IGNORE_TYPES = ["execute_request", "execute_input", "status"]
-    STRIP_KEYS = ["execution_count", "traceback"]
+    IGNORE_TYPES = ["execute_request", "execute_input", "status", "pyin"]
+    STRIP_KEYS = ["execution_count", "traceback", "prompt_number"]
 
     def __init__(self, cell, cell_idx, kernel, *args, **kwargs):
         """
@@ -187,13 +246,16 @@ class NoseCellTestCase(TestCase):
         return "%s#%s" % (self.filename, self.cell_idx)
 
     def runTest(self):
-        self.kernel.execute(self.cell.source)
+        self.kernel.execute(self.cellCode())
 
         outputs = []
         msg = None
 
         while self.shouldContinue(msg):
-            msg = self.iopub.get_msg(block=True, timeout=1)
+            try:
+                msg = self.iopub.get_msg(block=True, timeout=1)
+            except Empty:
+                continue
 
             if msg["msg_type"] not in self.IGNORE_TYPES:
                 outputs.append(self.transformMessage(msg))
