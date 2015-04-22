@@ -38,11 +38,6 @@ class NosebookTwo(object):
         with open(filename) as f:
             return read(f)
 
-    def _cells(self, nb):
-        for worksheet in nb.worksheets:
-            for cell in worksheet.cells:
-                yield cell
-
 
 class NosebookThree(object):
     """
@@ -50,10 +45,6 @@ class NosebookThree(object):
     """
     def _readnb(self, filename):
         return read(filename, NBFORMAT_VERSION)
-
-    def _cells(self, nb):
-        for cell in nb.cells:
-            yield cell
 
 
 class NoseCellTestCaseTwo(object):
@@ -171,9 +162,15 @@ class Nosebook(NosebookVersion, Plugin):
         return nb
 
     def codeCells(self, nb):
-        for cell in self._cells(nb):
-            if cell.cell_type == "code":
-                yield cell
+        if nb.nbformat < 4:
+            for worksheet in nb.worksheets:
+                for cell in worksheet.cells:
+                    if cell.cell_type == "code":
+                        yield cell
+        else:
+            for cell in nb.cells:
+                if cell.cell_type == "code":
+                    yield cell
 
     def wantFile(self, filename):
         """
