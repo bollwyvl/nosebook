@@ -1,4 +1,4 @@
 nose>=1.3.4
-IPython>=3.0.0
+IPython
 jsonschema
 pyzmq
