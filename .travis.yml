@@ -5,8 +5,8 @@ python:
   - 3.3
   - 3.4
 env:
-  - IP_VERSION=">=2.0,<=3.0"
-  - IP_VERSION=">=3.0,<=4.0"
+  - IP_VERSION=">=2.0,<3.0"
+  - IP_VERSION=">=3.0,<4.0"
 install:
   - pip install IPython${IP_VERSION}
   - pip install -r requirements-dev.txt
