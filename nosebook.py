@@ -3,11 +3,20 @@ import os
 import re
 import json
 from copy import copy
+from pprint import pformat
 
 try:
+    # py3
     from queue import Empty
+
+    def isstr(s):
+        return isinstance(s, str)
 except ImportError:
+    # py2
     from Queue import Empty
+
+    def isstr(s):
+        return isinstance(s, basestring)  # noqa
 
 from unittest import TestCase
 
@@ -15,17 +24,19 @@ from nose.plugins import Plugin
 
 from IPython.kernel.tests import utils
 
+
 try:
-    from IPython.nbformat import read
-    NBFORMAT_VERSION = 4
+    from IPython.nbformat.converter import convert
+    from IPython.nbformat.reader import reads
     IPYTHON_VERSION = 3
 except ImportError:
-    from IPython.nbformat.reader import read
-    NBFORMAT_VERSION = 3
+    from IPython.nbformat.convert import convert
+    from IPython.nbformat.reader import reads
     IPYTHON_VERSION = 2
 
-__version__ = "0.3.0"
+NBFORMAT_VERSION = 4
 
+__version__ = "0.3.0"
 
 log = logging.getLogger("nose.plugins.nosebook")
 
@@ -34,35 +45,32 @@ class NosebookTwo(object):
     """
     Implement necessary functions against the IPython 2.x API
     """
-    def _readnb(self, filename):
-        with open(filename) as f:
-            return read(f)
+
+    def newKernel(self, nb):
+        """
+        generate a new kernel
+        """
+        manager, kernel = utils.start_new_kernel()
+        return kernel
 
 
 class NosebookThree(object):
     """
     Implement necessary functions against the IPython 3.x API
     """
-    def _readnb(self, filename):
-        return read(filename, NBFORMAT_VERSION)
-
-
-class NoseCellTestCaseTwo(object):
-    def cellCode(self):
-        return self.cell.input
-
-
-class NoseCellTestCaseThree(object):
-    def cellCode(self):
-        return self.cell.source
-
+    def newKernel(self, nb):
+        """
+        generate a new kernel
+        """
+        manager, kernel = utils.start_new_kernel(
+            kernel_name=nb.metadata.kernelspec.name
+        )
+        return kernel
 
 NosebookVersion = NosebookThree
-NoseCellTestCaseVersion = NoseCellTestCaseThree
 
 if IPYTHON_VERSION == 2:
     NosebookVersion = NosebookTwo
-    NoseCellTestCaseVersion = NoseCellTestCaseTwo
 
 
 class Nosebook(NosebookVersion, Plugin):
@@ -132,8 +140,10 @@ class Nosebook(NosebookVersion, Plugin):
             except Exception:
                 scrubs = [options.nosebookScrub]
 
-        if isinstance(scrubs, str):
-            scrubs = {scrubs: "<...>"}
+        if isstr(scrubs):
+            scrubs = {
+                scrubs: "<...>"
+            }
         elif not isinstance(scrubs, dict):
             scrubs = dict([
                 (scrub, "<...%s>" % i)
@@ -151,6 +161,10 @@ class Nosebook(NosebookVersion, Plugin):
         """
         return False
 
+    def _readnb(self, filename):
+        with open(filename) as f:
+            return reads(f.read())
+
     def readnb(self, filename):
         try:
             nb = self._readnb(filename)
@@ -159,18 +173,13 @@ class Nosebook(NosebookVersion, Plugin):
                      filename,
                      err)
             return False
-        return nb
+
+        return convert(nb, NBFORMAT_VERSION)
 
     def codeCells(self, nb):
-        if nb.nbformat < 4:
-            for worksheet in nb.worksheets:
-                for cell in worksheet.cells:
-                    if cell.cell_type == "code":
-                        yield cell
-        else:
-            for cell in nb.cells:
-                if cell.cell_type == "code":
-                    yield cell
+        for cell in nb.cells:
+            if cell.cell_type == "code":
+                yield cell
 
     def wantFile(self, filename):
         """
@@ -209,17 +218,8 @@ class Nosebook(NosebookVersion, Plugin):
                     scrubs=self.scrubMatch
                 )
 
-    def newKernel(self, nb):
-        """
-        generate a new kernel
-        """
-        manager, kernel = utils.start_new_kernel(
-            kernel_name=nb.metadata.kernelspec.name
-        )
-        return kernel
 
-
-class NoseCellTestCase(NoseCellTestCaseVersion, TestCase):
+class NoseCellTestCase(TestCase):
     """
     A test case for a single cell.
     """
@@ -246,6 +246,11 @@ class NoseCellTestCase(NoseCellTestCaseVersion, TestCase):
     def id(self):
         return "%s#%s" % (self.filename, self.cell_idx)
 
+    def cellCode(self):
+        if hasattr(self.cell, "source"):
+            return self.cell.source
+        return self.cell.input
+
     def runTest(self):
         self.kernel.execute(self.cellCode())
 
@@ -264,7 +269,10 @@ class NoseCellTestCase(NoseCellTestCaseVersion, TestCase):
         self.assertEqual(
             list(self.scrubOutputs(outputs)),
             list(self.scrubOutputs(self.cell.outputs)),
-            [outputs, self.cell.outputs]
+            pformat({
+                "scrubbed": outputs,
+                "expected": self.cell.outputs
+            })
         )
 
     def scrubOutputs(self, outputs):
@@ -275,15 +283,21 @@ class NoseCellTestCase(NoseCellTestCaseVersion, TestCase):
             out = copy(output)
 
             for scrub, sub in self.scrubs.items():
-                def _scrubLines(obj, key):
-                    obj[key] = re.sub(scrub, sub, obj[key])
+                def _scrubLines(lines):
+                    if isstr(lines):
+                        return re.sub(scrub, sub, lines)
+                    else:
+                        return [re.sub(scrub, sub, line) for line in lines]
 
                 if "text" in out:
-                    _scrubLines(out, "text")
+                    out["text"] = _scrubLines(out["text"])
 
                 if "data" in out:
-                    for mime, data in out["data"].items():
-                        _scrubLines(out["data"], mime)
+                    if isinstance(out["data"], dict):
+                        for mime, data in out["data"].items():
+                            out["data"][mime] = _scrubLines(data)
+                    else:
+                        out["data"] = _scrubLines(out["data"])
             yield out
 
     def stripKeys(self, d):

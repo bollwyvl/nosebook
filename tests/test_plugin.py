@@ -1,5 +1,4 @@
 import json
-import os
 import unittest
 
 from nose.plugins import PluginTester
@@ -8,14 +7,9 @@ from nosebook import Nosebook
 
 OTHER_ARGS = ["--verbosity=3"]
 
-NBFORMAT = ""
-
-if os.environ.get("IP_VERSION", None) == 2:
-    NBFORMAT = "nbformat3.*"
-
 
 def match(pattern):
-    return "--nosebook-match=.*%s%s.*" % (NBFORMAT, pattern)
+    return "--nosebook-match=.*%s.*" % pattern
 
 
 def match_cell(pattern):
@@ -52,39 +46,51 @@ class TestNosebook(PluginTester, unittest.TestCase):
 
 
 class TestScrubDict(TestNosebook):
+    """
+    Support dictionary of scrubs
+    """
     args = [
         match("Scrubbing"),
         scrub({
-            "a random number <0x0\.\d*>": "scrub1",
-            "some other random number <0x0\.\d*>": "scrub2",
-            "<(.*) at 0x[0-9a-f]+>": "<\1>"
+            r"a random number <0x0\.\d*>": "scrub1",
+            r"some other random number <0x0\.\d*>": "scrub2",
+            r"<(.*) at 0x[0-9a-f]+>": "<\1>"
         })
     ] + OTHER_ARGS
 
 
 class TestScrubList(TestNosebook):
+    """
+    Support list of scrubs
+    """
     args = [
         match("Scrubbing"),
         scrub([
-            "a random number <0x0\.\d*>",
-            "some other random number <0x0\.\d*>",
-            "<(.*) at 0x[0-9a-f]+>"
+            r"a random number <0x0\.\d*>",
+            r"some other random number <0x0\.\d*>",
+            r"<(.*) at 0x[0-9a-f]+>"
         ])
     ] + OTHER_ARGS
 
 
 class TestScrubStr(TestNosebook):
+    """
+    Support a single scrub
+    """
     args = [
         match("Scrubbing"),
-        scrub("((a|some other) random number <0x0\.\d*>)|"
-              "<(.*) at 0x[0-9a-f]+>")
+        scrub(r"((a|some other) random number <0x0\.\d*>)|"
+              r"<(.*) at 0x[0-9a-f]+>")
     ] + OTHER_ARGS
 
 
 class TestMatchCell(TestNosebook):
+    """
+    Support a normalish cell match
+    """
     args = [
         match("Test"),
-        match_cell("^\s*(class|def) .*[tT]est.*")
+        match_cell(r"^\s*(class|def) .*[tT]est.*")
     ] + OTHER_ARGS
 
 
