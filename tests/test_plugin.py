@@ -1,15 +1,20 @@
 import json
 import unittest
 
+from IPython import version_info
+
 from nose.plugins import PluginTester
 
 from nosebook import Nosebook
 
 OTHER_ARGS = ["--verbosity=3"]
 
+IPY_VERSION = "ipython%s" % version_info[0]
+
 
 def match(pattern):
-    return "--nosebook-match=.*%s.*" % pattern
+    return "--nosebook-match=.*%s.*%s.*" % (IPY_VERSION,
+                                            pattern,)
 
 
 def match_cell(pattern):
