@@ -1,2 +1,2 @@
 [nosetests]
-verbosity=3
+verbosity=1

@@ -7,7 +7,7 @@ from nose.plugins import PluginTester
 
 from nosebook import Nosebook
 
-OTHER_ARGS = ["--verbosity=3"]
+OTHER_ARGS = []
 
 IPY_VERSION = "ipython%s" % version_info[0]
 
@@ -28,7 +28,7 @@ def scrub(patterns):
 class TestNosebook(PluginTester, unittest.TestCase):
     activate = "--with-nosebook"
     plugins = [Nosebook()]
-    args = [match("Test Simple")] + OTHER_ARGS
+    args = [match("Test Simple"), scrub(r"<.* at 0x[0-9a-f]+>")] + OTHER_ARGS
     env = {}
 
     def test_found(self):
@@ -84,8 +84,9 @@ class TestScrubStr(TestNosebook):
     """
     args = [
         match("Scrubbing"),
-        scrub(r"((a|some other) random number <0x0\.\d*>)|"
-              r"<(.*) at 0x[0-9a-f]+>")
+        scrub(
+            r"((a|some other) random number <0x0\.\d*>)|(<.* at 0x[0-9a-f]+>)"
+        )
     ] + OTHER_ARGS
 
 

@@ -267,7 +267,11 @@ class NoseCellTestCase(TestCase):
                 continue
 
             if msg["msg_type"] not in self.IGNORE_TYPES:
-                outputs.append(self.transformMessage(msg))
+                output = self.transformMessage(
+                    msg,
+                    self.cell.outputs[len(outputs)]
+                )
+                outputs.append(output)
 
         scrub = lambda x: dump_canonical(list(self.scrubOutputs(x)))
 
@@ -320,13 +324,14 @@ class NoseCellTestCase(TestCase):
             self.stripKeys(output)
         return cell
 
-    def transformMessage(self, msg):
+    def transformMessage(self, msg, expected):
         """
         transform a message into something like the notebook
         """
         SWAP_KEYS = {
             "output_type": {
-                "pyout": "execute_result"
+                "pyout": "execute_result",
+                "pyerr": "error"
             }
         }
 
@@ -339,6 +344,11 @@ class NoseCellTestCase(TestCase):
         for key, swaps in SWAP_KEYS.items():
             if key in output and output[key] in swaps:
                 output[key] = swaps[output[key]]
+
+        if "data" in output and "data" not in expected:
+            output["text"] = output["data"]
+            del output["data"]
+
         return output
 
     def shouldContinue(self, msg):
