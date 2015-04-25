@@ -3,7 +3,6 @@ import os
 import re
 import json
 from copy import copy
-from pprint import pformat
 
 try:
     # py3
@@ -71,6 +70,10 @@ NosebookVersion = NosebookThree
 
 if IPYTHON_VERSION == 2:
     NosebookVersion = NosebookTwo
+
+
+def dump_canonical(obj):
+    return json.dumps(obj, indent=2, sort_keys=True)
 
 
 class Nosebook(NosebookVersion, Plugin):
@@ -224,7 +227,7 @@ class NoseCellTestCase(TestCase):
     A test case for a single cell.
     """
     IGNORE_TYPES = ["execute_request", "execute_input", "status", "pyin"]
-    STRIP_KEYS = ["execution_count", "traceback", "prompt_number"]
+    STRIP_KEYS = ["execution_count", "traceback", "prompt_number", "source"]
 
     def __init__(self, cell, cell_idx, kernel, *args, **kwargs):
         """
@@ -266,14 +269,15 @@ class NoseCellTestCase(TestCase):
             if msg["msg_type"] not in self.IGNORE_TYPES:
                 outputs.append(self.transformMessage(msg))
 
-        self.assertEqual(
-            list(self.scrubOutputs(outputs)),
-            list(self.scrubOutputs(self.cell.outputs)),
-            pformat({
-                "scrubbed": outputs,
-                "expected": self.cell.outputs
-            })
-        )
+        scrub = lambda x: dump_canonical(list(self.scrubOutputs(x)))
+
+        scrubbed = scrub(outputs)
+        expected = scrub(self.cell.outputs)
+
+        self.assertEqual(scrubbed, expected, "\n{}\n\n{}".format(
+            scrubbed,
+            expected
+        ))
 
     def scrubOutputs(self, outputs):
         """
@@ -320,12 +324,22 @@ class NoseCellTestCase(TestCase):
         """
         transform a message into something like the notebook
         """
+        SWAP_KEYS = {
+            "output_type": {
+                "pyout": "execute_result"
+            }
+        }
+
         output = {
             u"output_type": msg["msg_type"]
         }
         output.update(msg["content"])
 
-        return self.stripKeys(output)
+        output = self.stripKeys(output)
+        for key, swaps in SWAP_KEYS.items():
+            if key in output and output[key] in swaps:
+                output[key] = swaps[output[key]]
+        return output
 
     def shouldContinue(self, msg):
         """
