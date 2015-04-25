@@ -1,5 +1,6 @@
 import json
 import unittest
+import sys
 
 from IPython import version_info
 
@@ -9,12 +10,16 @@ from nosebook import Nosebook
 
 OTHER_ARGS = []
 
-IPY_VERSION = "ipython%s" % version_info[0]
+PY_VERSION = "py%s" % sys.version_info[0]
+IPY_VERSION = "ipy%s" % version_info[0]
 
 
 def match(pattern):
-    return "--nosebook-match=.*%s.*%s.*" % (IPY_VERSION,
-                                            pattern,)
+    return "--nosebook-match=.*/{}/{}/.*{}.*".format(
+        PY_VERSION,
+        IPY_VERSION,
+        pattern
+    )
 
 
 def match_cell(pattern):
