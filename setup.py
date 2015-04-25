@@ -24,7 +24,7 @@ def read(fname):
 
 setup(
     name="nosebook",
-    version="0.3.0",
+    version="0.4.0",
     author="Nicholas Bollweg",
     author_email="nick.bollweg@gmail.com",
     description="a nose plugin for IPython notebooks",
@@ -32,7 +32,7 @@ setup(
     keywords="IPython nose",
     url="http://github.com/bollwyvl/nosebook",
     py_modules=["nosebook"],
-    long_description=read("README.md"),
+    long_description=read("README.rst"),
     test_suite="nose.collector",
     classifiers=[
         "Topic :: Utilities",
@@ -43,6 +43,7 @@ setup(
         "Development Status :: 3 - Alpha",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 2",
         "License :: OSI Approved :: BSD License",
         "Topic :: Software Development :: Testing",
     ],
@@ -52,9 +53,12 @@ setup(
         "jsonschema",
         "pyzmq"
     ],
-    entry_points={"nose.plugins.0.10": [
-        "nosebook = nosebook:Nosebook",
-        "subprocstreams = IPython.testing.iptest:SubprocessStreamCapturePlugin"
-    ]},
+    entry_points={
+        "nose.plugins.0.10": [
+            "nosebook = nosebook:Nosebook",
+            "subprocstreams = "
+            "IPython.testing.iptest:SubprocessStreamCapturePlugin"
+        ]
+    },
     cmdclass={'test': NosebookTestCommand}
 )

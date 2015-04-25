@@ -35,7 +35,7 @@ except ImportError:
 
 NBFORMAT_VERSION = 4
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 log = logging.getLogger("nose.plugins.nosebook")
 
