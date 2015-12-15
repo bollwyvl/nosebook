@@ -21,17 +21,22 @@ from unittest import TestCase
 
 from nose.plugins import Plugin
 
-from IPython.kernel.tests import utils
-
 
 try:
-    from IPython.nbformat.converter import convert
-    from IPython.nbformat.reader import reads
-    IPYTHON_VERSION = 3
+    from ipykernel.tests import utils
+    from nbformat.converter import convert
+    from nbformat.reader import reads
+    IPYTHON_VERSION = 4
 except ImportError:
-    from IPython.nbformat.convert import convert
-    from IPython.nbformat.reader import reads
-    IPYTHON_VERSION = 2
+    from IPython.kernel.tests import utils
+    try:
+        from IPython.nbformat.converter import convert
+        from IPython.nbformat.reader import reads
+        IPYTHON_VERSION = 3
+    except ImportError:
+        from IPython.nbformat.convert import convert
+        from IPython.nbformat.reader import reads
+        IPYTHON_VERSION = 2
 
 NBFORMAT_VERSION = 4
 
@@ -66,10 +71,11 @@ class NosebookThree(object):
         )
         return kernel
 
-NosebookVersion = NosebookThree
 
 if IPYTHON_VERSION == 2:
     NosebookVersion = NosebookTwo
+else:
+    NosebookVersion = NosebookThree
 
 
 def dump_canonical(obj):
