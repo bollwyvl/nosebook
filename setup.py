@@ -25,6 +25,7 @@ setup(
     long_description=read("README.rst"),
     test_suite="nose.collector",
     include_package_data=True,
+    zip_safe=False,
     classifiers=[
         "Topic :: Utilities",
         "Framework :: IPython",
