@@ -1,1 +1,1 @@
-"%PREFIX%\Scripts\python" -m nosebook.tests
+"%PREFIX%\python" -m nosebook.tests
