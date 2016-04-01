@@ -24,6 +24,7 @@ setup(
     packages=["nosebook"],
     long_description=read("README.rst"),
     test_suite="nose.collector",
+    include_package_data=True,
     classifiers=[
         "Topic :: Utilities",
         "Framework :: IPython",
