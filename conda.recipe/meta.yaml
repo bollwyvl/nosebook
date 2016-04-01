@@ -11,7 +11,6 @@ build:
   {% else %}string: py{{ environ.get('PY_VER').replace('.', '') }}_{{ environ.get('GIT_BUILD_STR', 'GIT_STUB') }}{% endif %}
   entry_points:
     - nosebook = nosebook.plugin:Nosebook
-    - subprocstreams = IPython.testing.iptest:SubprocessStreamCapturePlugin
 
 requirements:
   build:
