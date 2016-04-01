@@ -12,13 +12,17 @@ build:
 
 requirements:
   build:
-    - python
-  run:
-    - python
-    - nose
-    - nbformat
     - ipython
     - jupyter_client
+    - nbformat
+    - nose
+    - python
+  run:
+    - ipython
+    - jupyter_client
+    - nbformat
+    - nose
+    - python
 
 test:
   requires:
