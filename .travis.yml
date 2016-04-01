@@ -13,5 +13,5 @@ install:
   - pip install -r requirements-dev.txt
   - python setup.py develop
 script:
-  - python -m flake8 *.py tests/*.py
+  - python -m flake8 setup.py nosebook
   - python -m nosebook.tests
