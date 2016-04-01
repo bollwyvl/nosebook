@@ -21,7 +21,7 @@ setup(
     license="BSD",
     keywords="Jupyter nose notebook testing",
     url="http://github.com/bollwyvl/nosebook",
-    packages=["nosebook"],
+    packages=["nosebook", "nosebook.util", "nosebook.tests"],
     long_description=read("README.rst"),
     test_suite="nose.collector",
     include_package_data=True,
