@@ -1,1 +1,1 @@
-"${PATH}/python" -m nosebook.tests
+"${PREFIX}/bin/python" -m nosebook.tests
