@@ -1,6 +1,7 @@
 import json
-import unittest
+import os
 import sys
+import unittest
 
 from IPython import version_info
 
@@ -15,10 +16,11 @@ IPY_VERSION = "ipy%s" % version_info[0]
 
 
 def match(pattern):
-    return "--nosebook-match=.*/{}/{}/.*{}.*".format(
+    return "--nosebook-match=.*{3}{0}{3}{1}{3}.*{2}.*".format(
         PY_VERSION,
         IPY_VERSION,
-        pattern
+        pattern,
+        os.path.sep
     )
 
 
