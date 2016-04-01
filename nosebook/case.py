@@ -51,11 +51,12 @@ class NoseCellTestCase(unittest.TestCase):
                 continue
 
             if msg["msg_type"] not in self.IGNORE_TYPES:
-                output = self.transformMessage(
-                    msg,
-                    self.cell["outputs"][len(outputs)]
-                )
-                outputs.append(output)
+                output = None
+                try:
+                    output = self.cell["outputs"][len(outputs)]
+                except IndexError:
+                    continue
+                outputs.append(self.transformMessage(msg, output))
 
         def _scrub(x):
             return dump_canonical(list(self.scrubOutputs(x)))
