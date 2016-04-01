@@ -32,6 +32,7 @@ test:
     - python
     - nose
     - flake8
+    - coverage
 
 about:
   home: https://github.com/bollwyvl/nosebook

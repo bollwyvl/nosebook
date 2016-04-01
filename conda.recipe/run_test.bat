@@ -1,1 +1,1 @@
-"%PREFIX%\bin\nosetests"
+"%PREFIX%\bin\nosetests" --with-coverage --cover-package nosebook

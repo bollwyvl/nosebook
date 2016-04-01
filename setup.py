@@ -19,9 +19,9 @@ setup(
     author_email="nick.bollweg@gmail.com",
     description="a nose plugin for Jupyter notebooks",
     license="BSD",
-    keywords="Jupyter nose",
+    keywords="Jupyter nose notebook testing",
     url="http://github.com/bollwyvl/nosebook",
-    py_modules=["nosebook"],
+    packages=["nosebook"],
     long_description=read("README.rst"),
     test_suite="nose.collector",
     classifiers=[
