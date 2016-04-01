@@ -2,7 +2,7 @@ import json
 import unittest
 import sys
 
-from IPython import version_info
+# from IPython import version_info
 
 from nose.plugins import PluginTester
 
@@ -11,7 +11,7 @@ from nosebook import Nosebook
 OTHER_ARGS = []
 
 PY_VERSION = "py%s" % sys.version_info[0]
-IPY_VERSION = "ipy%s" % version_info[0]
+IPY_VERSION = "ipy%s" % 3  # version_info[0]
 
 
 def match(pattern):
@@ -40,13 +40,17 @@ class TestNosebook(PluginTester, unittest.TestCase):
         """
         Tests are found
         """
-        assert "Ran 0 tests" not in self.output, ("got: %s" % self.output)
+        self.assertNotIn("Ran 0 tests",
+                         str(self.output),
+                         "got: %s" % self.output)
 
     def test_pass(self):
         """
         Tests pass
         """
-        assert "FAIL" not in self.output, ("got: %s" % self.output)
+        self.assertNotIn("FAIL",
+                         str(self.output),
+                         "got: %s" % self.output)
 
     def makeSuite(self):
         """
