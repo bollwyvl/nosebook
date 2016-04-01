@@ -1,3 +1,4 @@
 include LICENSE
 include *.rst
 include *.ipynb
+recursive-include nosebook *
