@@ -5,19 +5,16 @@ import re
 
 from nose.plugins import Plugin
 
-from jupyter_client.manager import start_new_kernel
-import nbformat
-
 from .util import isstr
+from .util.ipycompat import NosebookVersion
+
 from . import case
 
 
 log = logging.getLogger(__name__)
 
-NBFORMAT_VERSION = 4
 
-
-class Nosebook(Plugin):
+class Nosebook(NosebookVersion, Plugin):
     """
     A nose plugin for discovering and executing Jupyter notebook cells
     as tests
@@ -101,27 +98,6 @@ class Nosebook(Plugin):
             for scrub, sub in scrubs.items()
         }
 
-    def wantModule(self, *args, **kwargs):
-        """
-        we don't handle actual code modules!
-        """
-        return False
-
-    def _readnb(self, filename):
-        with open(filename) as f:
-            return nbformat.reads(f.read(), NBFORMAT_VERSION)
-
-    def readnb(self, filename):
-        try:
-            nb = self._readnb(filename)
-        except Exception as err:
-            log.info("could not be parse as a notebook %s\n%s",
-                     filename,
-                     err)
-            return False
-
-        return nbformat.convert(nb, NBFORMAT_VERSION)
-
     def codeCells(self, nb):
         for cell in nb.cells:
             if cell.cell_type == "code":
@@ -163,9 +139,3 @@ class Nosebook(Plugin):
                     filename=filename,
                     scrubs=self.scrubMatch
                 )
-
-    def newKernel(self, nb):
-        manager, kernel = start_new_kernel(
-            kernel_name=nb.metadata.kernelspec.name
-        )
-        return kernel

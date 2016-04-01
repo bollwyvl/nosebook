@@ -1,3 +1,4 @@
+# flake8: noqa
 try:
     # py3
     from queue import Empty

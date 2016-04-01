@@ -2,8 +2,10 @@ import nosebook
 
 import unittest
 
+
 class FakeKernel(object):
     iopub_channel = {}
+
 
 class TestNosebook(unittest.TestCase):
     def setUp(self):

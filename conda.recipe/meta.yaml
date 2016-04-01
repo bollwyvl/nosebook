@@ -19,6 +19,7 @@ requirements:
     - nbformat
     - nose
     - python
+    - flake8
   run:
     - ipython
     - jupyter_client
@@ -30,7 +31,6 @@ test:
   requires:
     - python
     - nose
-    - flake8
     - coverage
 
 about:

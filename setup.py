@@ -11,10 +11,15 @@ def read(fname):
     """
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+__version__ = None
+
+with open("nosebook/_version.py") as version:
+    exec(version.read())
+
 
 setup(
     name="nosebook",
-    version="0.4.0",
+    version=__version__,
     author="Nicholas Bollweg",
     author_email="nick.bollweg@gmail.com",
     description="a nose plugin for Jupyter notebooks",

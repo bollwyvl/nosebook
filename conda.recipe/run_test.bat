@@ -1,1 +1,1 @@
-"%PREFIX%\bin\nosetests" nosebook.tests --with-coverage --cover-package nosebook
+"%PATH%\python" -m nosebook.tests
