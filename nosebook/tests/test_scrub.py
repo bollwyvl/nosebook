@@ -1,6 +1,7 @@
-import nosebook
-
 import unittest
+
+
+from nosebook import case
 
 
 class FakeKernel(object):
@@ -45,7 +46,7 @@ class TestNosebook(unittest.TestCase):
         self.kernel = FakeKernel()
 
     def make_case(self, scrubs, expected):
-        case = nosebook.NoseCellTestCase(
+        an_case = case.NoseCellTestCase(
             self.cell,
             0,
             self.kernel,
@@ -53,9 +54,9 @@ class TestNosebook(unittest.TestCase):
         )
 
         self.assertEquals(
-            list(case.scrubOutputs(self.cell["outputs"])),
+            list(an_case.scrubOutputs(self.cell["outputs"])),
             expected,
-            list(case.scrubOutputs(self.cell["outputs"])),
+            list(an_case.scrubOutputs(self.cell["outputs"])),
         )
 
     def test_scrub_dict(self):

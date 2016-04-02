@@ -52,7 +52,7 @@ setup(
     ],
     entry_points={
         "nose.plugins.0.10": [
-            "nosebook = nosebook.plugin:Nosebook"
+            "nosebook = nosebook:Nosebook"
         ]
     }
 )
