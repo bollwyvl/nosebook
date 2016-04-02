@@ -1,0 +1,40 @@
+package:
+  name: nosebook
+  version: {{ environ.get('GIT_DESCRIBE_TAG', '') }}
+
+source:
+  git_url: ../
+
+build:
+  number: {{ environ.get('GIT_DESCRIBE_NUMBER', 0) }}
+  {% if environ.get('GIT_DESCRIBE_NUMBER', '0') == '0' %}string: py{{ environ.get('PY_VER').replace('.', '') }}_0
+  {% else %}string: py{{ environ.get('PY_VER').replace('.', '') }}_{{ environ.get('GIT_BUILD_STR', 'GIT_STUB') }}{% endif %}
+  entry_points:
+    - nosebook = nosebook.plugin:Nosebook
+
+requirements:
+  build:
+    - ipython
+    - jupyter_client
+    - nbformat
+    - nose
+    - python
+    - flake8
+  run:
+    - ipython
+    - jupyter_client
+    - nbformat
+    - nose
+    - python
+
+test:
+  requires:
+    - python
+    - nose
+    - coverage
+    - notebook
+
+about:
+  home: https://github.com/bollwyvl/nosebook
+  license: BSD
+  summary: Use Jupyter notebooks as nose tests

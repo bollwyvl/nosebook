@@ -1,12 +1,16 @@
-import nosebook
-import munch
-
 import unittest
+
+
+from nosebook import case
+
+
+class FakeKernel(object):
+    iopub_channel = {}
 
 
 class TestNosebook(unittest.TestCase):
     def setUp(self):
-        self.cell = munch.Munch({
+        self.cell = {
             "cell_type": "code",
             "execution_count": 21,
             "metadata": {
@@ -37,14 +41,12 @@ class TestNosebook(unittest.TestCase):
                 "print(1234)\n",
                 "rnd"
             ]
-        })
+        }
 
-        self.kernel = munch.Munch({
-            "iopub_channel": {}
-        })
+        self.kernel = FakeKernel()
 
     def make_case(self, scrubs, expected):
-        case = nosebook.NoseCellTestCase(
+        an_case = case.NoseCellTestCase(
             self.cell,
             0,
             self.kernel,
@@ -52,9 +54,9 @@ class TestNosebook(unittest.TestCase):
         )
 
         self.assertEquals(
-            list(case.scrubOutputs(self.cell.outputs)),
+            list(an_case.scrubOutputs(self.cell["outputs"])),
             expected,
-            list(case.scrubOutputs(self.cell.outputs)),
+            list(an_case.scrubOutputs(self.cell["outputs"])),
         )
 
     def test_scrub_dict(self):

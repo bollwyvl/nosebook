@@ -3,14 +3,16 @@ sudo: false
 python:
   - 2.7
   - 3.4
+  - 3.5
 env:
-  - IP_VERSION=">=2.0,<3.0"
-  - IP_VERSION=">=3.0,<4.0"
+  - IPY_VERSION=">=2.0,<3.0"
+  - IPY_VERSION=">=3.0,<4.0"
+  - IPY_VERSION=">=4.0,<5.0 jupyter_client nbformat ipykernel"
 install:
-  - pip install IPython${IP_VERSION}
+  - pip install IPython${IPY_VERSION}
   - ipython --version
   - pip install -r requirements-dev.txt
   - python setup.py develop
 script:
-  - python -m flake8 *.py tests/*.py
-  - python setup.py test
+  - python -m flake8 setup.py nosebook
+  - python -m nosebook.tests

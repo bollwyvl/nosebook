@@ -1,0 +1,18 @@
+package: nosebook
+
+platform:
+  - linux-64
+  - osx-64
+  - win-64
+  - win-32
+  - linux-32
+
+engine:
+  - python=3.5
+  - python=3.4
+  - python=2.7
+
+script:
+  - conda build conda.recipe
+
+build_targets: conda
