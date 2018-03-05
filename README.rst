@@ -17,9 +17,9 @@ rich, multi-format documentation and a simple part of your test suite.
 
 .. |Build Status| image:: https://travis-ci.org/bollwyvl/nosebook.svg?branch=master
    :target: https://travis-ci.org/bollwyvl/nosebook
-.. |PyPI| image:: https://pypip.in/version/nosebook/badge.svg?style=flat
+.. |PyPI| image:: https://img.shields.io/pypi/v/nosebook.svg?style=flat
    :target: https://pypi.python.org/pypi/nosebook
-.. |BSD| image:: https://pypip.in/license/nose-watcher/badge.svg
+.. |BSD| image:: https://img.shields.io/pypi/l/nose-watcher.svg
    :target: ./LICENSE
 
 How does it work?
